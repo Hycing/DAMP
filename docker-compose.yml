@@ -1,0 +1,44 @@
+version: "3.8"
+services:
+  php-apache:
+    build:
+      context: .
+    depends_on:
+      - "mysql"
+    volumes:
+      - ./www:/var/www/html
+      - "./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini"
+    ports:
+      - "80:80"
+      - "443:443"
+  mysql:
+    image: "mysql:8.0.40"
+    # Uncomment line below if you are using a Mac with the M1 chip
+    #platform: linux/amd64
+    volumes:
+      #- "./mysql_seed.sql:/docker-entrypoint-initdb.d/mysql_seed.sql"
+      - "./dbdata:/var/lib/mysql"
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+    environment:
+      MYSQL_ROOT_PASSWORD: "RootSecurepass"
+      MYSQL_DATABASE: "dbase"
+      MYSQL_USER: "dbuser"
+      MYSQL_PASSWORD: "usertest"
+
+  phpmyadmin:
+    image: "phpmyadmin/phpmyadmin"
+    depends_on:
+      - "mysql"
+    links:
+      - "mysql"
+    environment:
+      PMA_HOST: "mysql"
+      PMA_PORT: "3306"
+      UPLOAD_LIMIT: "256M"
+    ports:
+      - "8080:80"
+
+networks:
+  default:
+    name: "DAMP"
